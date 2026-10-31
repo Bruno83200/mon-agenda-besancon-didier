@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Éphéméride · Besançon</title>
+<meta name="theme-color" content="#0b0a1f">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Agenda de bord de Bruno — Besançon : éphéméride, météo, trafic Ginko en temps réel, carte du réseau, lieux favoris et sorties.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agenda Besançon">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300a5c2'/%3E%3Ctext x='32' y='45' font-size='34' text-anchor='middle' fill='white' font-family='Segoe UI,sans-serif'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 11h-4v-2h2V7h2z"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 4l8 8h-5v8h-6v-8H4z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08a6 6 0 1 1-1.42-6.23L13 11h7V4z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></symbol>
+  <symbol id="i-walk" viewBox="0 0 24 24"><path d="M13.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5 0-.8.1L6 8.3V13h2V9.6z"/></symbol>
+  <symbol id="i-tram" viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v9a3 3 0 0 0 3 3l-1.5 1.5V21h1.8l1.7-1.7h8l1.7 1.7H19.5v-1.5L18 18a3 3 0 0 0 3-3V6a2 2 0 0 0-2-2h-2V2H7zm-2 5h14v6H5V7zm2.5 8.5a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm9 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><path d="M4 16a2 2 0 0 0 4 0 2 2 0 0 0-4 0zm12 0a2 2 0 0 0 4 0 2 2 0 0 0-4 0zM4 6c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v9H4V6zm2 1h12V7H6v0zm0 2h5v3H6V9z"/></symbol>
+</svg>
+
+<div class="overlay">
+<div class="container">
+
+  <!-- ================= EN-TÊTE / ÉPHÉMÉRIDE ================= -->
+  <header class="header card">
+    <div class="head-top">
+      <div class="brand">
+        <div class="logo">🌌</div>
+        <div>
+          <h1>Mon Éphéméride <span class="brand-city">Besançon</span></h1>
+          <p class="brand-sub">Agenda de bord · Doubs · 25000</p>
+        </div>
+      </div>
+      <div class="head-right">
+        <div class="sun-times"><span>Lever <b id="sunrise">—</b></span><span>Coucher <b id="sunset">—</b></span></div>
+        <div class="head-badges">
+          <span class="badge" id="badgeSaint">Saint du jour : —</span>
+          <span class="badge" id="badgeMoment">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="head-main">
+      <div class="head-time">
+        <div class="time" id="clock">--:--</div>
+        <div class="time-sub"><span id="seconds">00</span><span class="unit">s</span></div>
+      </div>
+      <div class="head-date">
+        <div class="date" id="dateLong">Chargement…</div>
+        <div class="date-sub"><span id="weekNumber">—</span> · <span id="dayYear">—</span> · <span id="moon">—</span></div>
+        <div class="progress" title="Progression de la journée"><div class="progress-bar" id="dayProgress"></div></div>
+        <div class="progress-lbl"><span id="dayProgressLbl">—</span></div>
+      </div>
+      <div class="head-ephem">
+        <div class="ephem-item"><span class="ephem-ic">☀</span><div><b id="daylight">—</b><small>durée du jour</small></div></div>
+        <div class="ephem-item"><span class="ephem-ic">☾</span><div><b id="season">—</b><small>saison</small></div></div>
+        <div class="ephem-item"><span class="ephem-ic">✦</span><div><b id="weekNum2">—</b><small>semaine</small></div></div>
+      </div>
+    </div>
+
+    <blockquote class="quote" id="quote">
+      <span class="quote-text">…</span><span class="quote-author"></span>
+    </blockquote>
+  </header>
+
+  <!-- ================= GRILLE PRINCIPALE ================= -->
+  <div class="main-grid">
+
+    <!-- ---------- COLONNE GAUCHE ---------- -->
+    <div class="column left-column">
+
+      <!-- RADIO -->
+      <section class="card radio">
+        <h2><span class="h2-ic">◉</span> Radio locale</h2>
+        <div class="radio-body">
+          <button class="radio-play" id="playBtn" title="Écouter / mettre en pause" aria-label="Écouter la radio">
+            <span id="playIcon">▶</span>
+          </button>
+          <div class="radio-meta">
+            <div class="radio-name" id="radioName">France Bleu Besançon</div>
+            <div class="radio-status" id="statusText">Cliquez pour écouter le direct</div>
+            <div class="radio-eq" id="radioEq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <div class="radio-controls">
+          <input type="range" min="0" max="100" value="70" class="volume" id="volumeSlider" aria-label="Volume">
+          <span class="vol-val" id="volumeValue">70 %</span>
+          <button class="mini-btn active" data-q="midfi">Standard</button>
+          <button class="mini-btn" data-q="lofi">Éco</button>
+        </div>
+        <div class="radio-alt">Pas de son ? <a href="https://www.francebleu.fr/france-bleu-besancon" target="_blank" rel="noopener">Écouter sur francebleu.fr</a></div>
+      </section>
+
+      <!-- VIE PRATIQUE -->
+      <section class="card practical">
+        <h2><span class="h2-ic">🥖</span> Vie pratique</h2>
+        <div class="market-today" id="marketToday">—</div>
+        <ul class="practical-list" id="marketsList">
+          <li data-jours="2,5"><b>Révolution</b><span>mar. & ven. 7 h–13 h</span></li>
+          <li data-jours="2,5,6"><b>Révolution</b><span>sam. 7 h–18 h</span></li>
+          <li data-jours="2,3,4,5,6,0"><b>Halles Beaux-Arts</b><span>couvert · fermé lundi</span></li>
+          <li data-jours="3,6"><b>Palente</b><span>mer. & sam. 7 h–13 h</span></li>
+          <li data-jours="3,6"><b>Cassin</b><span>mer. & sam. 7 h–18 h</span></li>
+          <li data-jours="4,0"><b>Île de France</b><span>jeu. & dim. 7 h–13 h</span></li>
+          <li data-jours="0"><b>Saint-Ferjeux</b><span>dim. 7 h–13 h</span></li>
+          <li data-jours="0"><b>Rivotte</b><span>dim. 8 h–13 h</span></li>
+        </ul>
+        <div class="quick-actions">
+          <a class="btn small" href="https://www.3237.fr/" target="_blank" rel="noopener"><span>✚</span> Pharmacie de garde</a>
+          <a class="btn small" href="https://www.grandbesancon.fr/toutes-les-demarches/dechets/" target="_blank" rel="noopener"><span>♻</span> Déchetteries</a>
+          <a class="btn small" href="https://www.besancon.fr/" target="_blank" rel="noopener"><span>⌂</span> Ville de Besançon</a>
+        </div>
+      </section>
+
+      <!-- BLOC-NOTES -->
+      <section class="card notepad">
+        <h2><span class="h2-ic">✎</span> Mon Mémo</h2>
+        <textarea id="myNotes" placeholder="Une idée, une liste de courses, un rendez-vous…"></textarea>
+        <div class="memo-foot"><span id="memoStatus">Sauvegarde automatique locale</span><button class="mini-btn" id="memoClear">Effacer</button></div>
+      </section>
+
+      <!-- DEUX DATES POUR BRUNO -->
+      <section class="card perso" id="persoCard">
+        <h2><span class="h2-ic">✦</span> Mes dates</h2>
+        <ul id="persoList"></ul>
+        <p class="perso-hint">Ajoutez vos dates dans <code>js/data-places.js</code> → <code>window.PERSO</code>.</p>
+      </section>
+
+    </div>
+
+    <!-- ---------- COLONNE CENTRE ---------- -->
+    <div class="column center-column">
+
+      <!-- GINKO TEMPS RÉEL -->
+      <section class="card ginko" id="ginkoCard">
+        <div class="ginko-head">
+          <div>
+            <h2><span class="h2-ic">🚊</span> Ginko — temps réel</h2>
+            <div class="head-sub"><p class="ginko-sub">Mes arrêts favoris · données temps réel Ginko (Keolis)</p></div>
+          </div>
+          <div class="ginko-tools">
+            <span class="live-dot" id="liveDot" title="Statut des données temps réel"></span>
+            <button class="icon-btn" id="ginkoRefresh" title="Rafraîchir"><svg><use href="#i-refresh"/></svg></button>
+          </div>
+        </div>
+        <div class="stop-grid" id="stopGrid"><div class="skeleton">Chargement des passages…</div></div>
+        <div class="traffic-block">
+          <div class="traffic-h"><span>⚠</span> Info trafic réseau</div>
+          <div id="ginkoTraffic" class="traffic-body"><span class="muted">Chargement des infos trafic…</span></div>
+        </div>
+        <div class="ginko-foot">
+          <span id="ginkoUpdated">—</span>
+          <span class="foot-links">
+            <a href="#" id="keyBtn" title="Coller la clé API du jour">🔑 clé API</a>
+            <a href="https://www.ginko.voyage/plan" target="_blank" rel="noopener">plan ↗</a>
+          </span>
+        </div>
+      </section>
+
+      <!-- TITRE + DÉTAIL -->
+      <section class="card transit" id="transitCard">
+        <div class="ginko-head">
+          <div>
+            <h2><span class="h2-ic">↗</span> <span id="detailTitle">Maison ↔ destinations</span></h2>
+            <p class="ginko-sub" id="detailSub">Choisissez une destination : itinéraire, temps, arrêt et départ réel.</p>
+          </div>
+          <button class="icon-btn" id="swapBtn" title="Inverser le sens" style="display:none">⇄</button>
+        </div>
+        <div class="route-tabs" id="routeTabs"></div>
+        <div class="route-body" id="routeBody">
+          <div class="empty">Sélectionnez une destination ci-dessus.</div>
+        </div>
+      </section>
+
+      <!-- PLANS DE LA JOURNÉE -->
+      <div class="two-cols">
+        <section class="card agenda">
+          <div class="ginko-head">
+            <div>
+              <h2><span class="h2-ic">☰</span> Mon agenda du jour</h2>
+              <div class="head-sub"><p class="ginko-sub">Tri automatique par heure.</p></div>
+            </div>
+            <button class="mini-btn" id="addAgenda">+ Ajouter</button>
+          </div>
+          <form class="agenda-form" id="agendaForm" hidden>
+            <input type="time" id="evTime" required>
+            <input type="text" id="evText" placeholder="Ex. : rendez-vous dentiste" maxlength="90" required>
+            <button class="mini-btn primary" type="submit">OK</button>
+          </form>
+          <ul class="agenda-list" id="agendaList"><li class="empty">Rien de prévu aujourd’hui.</li></ul>
+        </section>
+
+        <section class="card sorties">
+          <div class="ginko-head">
+            <div>
+              <h2><span class="h2-ic">🎟</span> Sorties à venir</h2>
+              <div class="head-sub"><p class="ginko-sub">Agenda bisontin (Micropolis, Rodia, CDN, Citadelle…).</p></div>
+            </div>
+          </div>
+          <ul class="events-list" id="eventsList"></ul>
+        </section>
+      </div>
+
+      <!-- ACTUS -->
+      <section class="card news">
+        <div class="ginko-head">
+          <div>
+            <h2><span class="h2-ic">🔥</span> À la Une — maCommune.info</h2>
+            <div class="head-sub"><p class="ginko-sub">Flux RSS local mis à jour automatiquement.</p></div>
+          </div>
+          <div class="news-tabs" id="newsTabs">
+            <button class="mini-btn active" data-feed="une">Une</button>
+            <button class="mini-btn" data-feed="loisirs">Loisirs</button>
+            <button class="mini-btn" data-feed="culture">Culture</button>
+          </div>
+        </div>
+        <div id="newsContent" class="news-content"><div class="skeleton">Chargement des actualités…</div></div>
+      </section>
+
+    </div>
+
+    <!-- ---------- COLONNE DROITE ---------- -->
+    <div class="column right-column">
+
+      <!-- MÉTÉO -->
+      <section class="card weather">
+        <h2><span class="h2-ic">☁</span> Météo Besançon</h2>
+        <div id="weatherContent"><div class="skeleton">Chargement…</div></div>
+        <div class="forecast" id="forecast"></div>
+        <div class="air" id="airQuality"></div>
+      </section>
+
+      <!-- CARTE DU RÉSEAU -->
+      <section class="card map-card">
+        <div class="ginko-head">
+          <div>
+            <h2><span class="h2-ic">◈</span> Le réseau en un coup d’œil</h2>
+            <div class="head-sub"><p class="ginko-sub">Tram, lignes urbaines et arrêts.</p></div>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <svg id="mapSvg" viewBox="0 0 360 470" role="img" aria-label="Carte schématique du réseau Ginko"></svg>
+          <div class="map-tip" id="mapTip">Survolez un arrêt</div>
+        </div>
+        <div class="map-legend" id="mapLegend"></div>
+      </section>
+
+      <!-- REPÈRES / BONS PLANS -->
+      <section class="card places">
+        <div class="ginko-head">
+          <div>
+            <h2><span class="h2-ic">✧</span> Mes lieux à Besançon</h2>
+            <div class="head-sub"><p class="ginko-sub">Repères, culture, nature, courses.</p></div>
+          </div>
+        </div>
+        <div class="search-box"><svg><use href="#i-search"/></svg><input id="placeSearch" type="search" placeholder="Rechercher un lieu… (marché, musée, CHU)"></div>
+        <div class="chips" id="placeChips"></div>
+        <div class="place-list" id="placeList"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- HOROSCOPE -->
+  <section class="card horoscope">
+    <h2><span class="h2-ic">♒</span> Mon horoscope</h2>
+    <div id="horoBox"><div class="skeleton">Chargement…</div></div>
+    <div class="horo-note">Source : mon-horoscope-du-jour.com — mise à jour quotidienne</div>
+  </section>
+
+  <footer class="footer">
+    <div>
+      <b>Données :</b> passages &amp; lignes Ginko — Open data Ginko / Keolis Besançon Mobilités (ODbL) ·
+      météo &amp; air : Open-Meteo · actus : maCommune.info ·
+      fond de carte : OpenStreetMap (ODbL). Clé API Ginko <b>temporaire</b> : à renouveler chaque jour sur
+      <a href="https://api.ginko.voyage/" target="_blank" rel="noopener">api.ginko.voyage</a>.
+    </div>
+    <div class="footer-right">Mon Éphéméride Besançon · <span id="version"></span></div>
+  </footer>
+
+</div>
+</div>
+
+<audio id="radioPlayer" preload="none"></audio>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modale lieu -->
+<div class="modal" id="placeModal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" aria-label="Fermer">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="starnote" id="starnote"></div>
+
+<script src="js/data-network.js"></script>
+<script src="js/data-places.js"></script>
+<script src="js/data-saints.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+/* Mode hors-ligne (uniquement quand l'agenda est servi par un site web) */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function (e) { console.warn('service worker', e); });
+  });
+}
+</script>
+</body>
+</html>
