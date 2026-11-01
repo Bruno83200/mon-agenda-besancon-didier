@@ -176,6 +176,15 @@
           <button class="icon-btn" id="swapBtn" title="Inverser le sens" style="display:none">⇄</button>
         </div>
         <div class="route-tabs" id="routeTabs"></div>
+        <div class="route-find" id="routeFind">
+          <input type="text" id="stopQuery" list="stopList" autocomplete="off"
+                 placeholder="Nom d’un arrêt Ginko — ex. : Révolution, Chamars…">
+          <datalist id="stopList"></datalist>
+          <button class="mini-btn primary" id="stopGo" type="button">Rechercher</button>
+          <button class="mini-btn" id="stopBrowse" type="button"
+                  title="Voir le plan des lignes pour retrouver le nom exact d’un arrêt">🗺 Plan des lignes ↗</button>
+        </div>
+        <div class="route-msg" id="stopMsg" hidden></div>
         <div class="route-body" id="routeBody">
           <div class="empty">Sélectionnez une destination ci-dessus.</div>
         </div>
