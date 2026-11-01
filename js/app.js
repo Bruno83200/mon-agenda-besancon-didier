@@ -680,12 +680,110 @@ const router = {
       const dest = this.dests.find(d => d.id === b.dataset.id);
       if (dest) showRoute(dest);
     }));
+    this.initFinder();
     $('#swapBtn')?.addEventListener('click', () => {
       if (!this.current) return;
       const r = net.route(this.current.toName, 'Languedoc');
       if (r) paintRoute({ label: 'Retour', via: 'vers la rue du Languedoc', stop: 'Languedoc', id: 'retour' }, r);
     });
     showRoute(this.dests[0]);
+  },
+
+  /* ---------- recherche d'un arrêt par son nom ---------- */
+  norm(t) {
+    return String(t || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // accents
+      .replace(/['’`]/g, ' ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  },
+
+  /* tous les arrêts, avec leurs lignes, pour la liste de suggestions */
+  fillSuggestions() {
+    const dl = $('#stopList'); if (!dl || !G.stops.length) return;
+    dl.innerHTML = G.stops
+      .slice().sort((a, b) => a[0].localeCompare(b[0], 'fr'))
+      .map(s => '<option value="' + esc(s[0]) + '">' + esc((s[3] || []).join(' · ')) + '</option>')
+      .join('');
+  },
+
+  /* retrouve un nom d'arrêt : exact, puis commence par, puis contient */
+  findStop(q) {
+    this.fillSuggestions();
+    const nq = this.norm(q);
+    if (!nq) return { err: 'empty' };
+    const list = G.stops.map(s => ({ nom: s[0], n: this.norm(s[0]), lignes: s[3] || [] }));
+    const exact = list.filter(x => x.n === nq);
+    if (exact.length) return { nom: exact[0].nom, lignes: exact[0].lignes, exact: true };
+    const start = list.filter(x => x.n.startsWith(nq));
+    if (start.length === 1) return { nom: start[0].nom, lignes: start[0].lignes, approx: true };
+    if (start.length > 1) return { err: 'many', cands: start.slice(0, 6) };
+    const inName = list.filter(x => x.n.includes(nq));
+    if (inName.length === 1) return { nom: inName[0].nom, lignes: inName[0].lignes, approx: true };
+    if (inName.length > 1) return { err: 'many', cands: inName.slice(0, 6) };
+    return { err: 'none' };
+  },
+
+  say(html) {
+    const m = $('#stopMsg'); if (!m) return;
+    if (!html) { m.hidden = true; m.innerHTML = ''; return; }
+    m.hidden = false; m.innerHTML = html;
+  },
+
+  goToStop() {
+    const input = $('#stopQuery'); if (!input) return;
+    const res = this.findStop(input.value);
+    input.classList.toggle('bad', !!(res.err && res.err !== 'empty'));
+
+    if (res.err === 'empty') {
+      this.say('Saisissez d’abord le nom d’un arrêt — par exemple <b>Révolution</b>, ' +
+        '<b>Chamars</b> ou <b>Gare Viotte</b>.');
+      input.focus(); return;
+    }
+    if (res.err === 'none') {
+      this.say('Aucun arrêt de ce nom sur le réseau. Vérifiez l’orthographe, essayez ' +
+        'un mot plus court, ou ouvrez le <a href="' + this.planUrl() + '" target="_blank" rel="noopener">' +
+        '<b>plan des lignes</b></a> pour lire le nom exact.');
+      return;
+    }
+    if (res.err === 'many') {
+      this.say('Plusieurs arrêts correspondent : ' +
+        res.cands.map(c => '« <b>' + esc(c.nom) + '</b> »').join(', ') + '. Précisez le nom.');
+      return;
+    }
+
+    // c'est le domicile lui-même : rien à calculer
+    if (res.nom === 'Languedoc') {
+      this.say('« Languedoc » est votre arrêt de domicile — c’est le point de départ de tous les itinéraires.');
+      return;
+    }
+
+    // trouvé : on affiche l'itinéraire depuis le domicile
+    $$('.route-tab').forEach(x => x.classList.remove('active'));
+    showRoute({ label: res.nom, stop: res.nom, via: 'Arrêt choisi dans la liste du réseau', id: 'custom' });
+    const lg = (res.lignes && res.lignes.length) ? ' — lignes <b>' + esc(res.lignes.join(' · ')) + '</b>' : '';
+    this.say('Itinéraire jusqu’à <b>' + esc(res.nom) + '</b> depuis la rue du Languedoc' + lg +
+      (res.approx ? ' <i>(nom rapproché de votre saisie)</i>' : ''));
+    const body = $('#routeBody'); if (body) body.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+
+  planUrl() {
+    return (window.LINKS && window.LINKS.ginkoPlan) ? window.LINKS.ginkoPlan : 'https://www.ginko.voyage/plan';
+  },
+
+  initFinder() {
+    const input = $('#stopQuery'), go = $('#stopGo'), browse = $('#stopBrowse');
+    this.fillSuggestions();
+    go?.addEventListener('click', () => this.goToStop());
+    input?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); this.goToStop(); }
+    });
+    input?.addEventListener('input', () => { input.classList.remove('bad'); });
+    browse?.addEventListener('click', () => {
+      window.open(this.planUrl(), '_blank', 'noopener');
+      this.say('Le plan s’ouvre dans un nouvel onglet : cliquez sur un arrêt pour lire son nom exact, ' +
+        'puis revenez ici et tapez-le dans le champ.');
+    });
   }
 };
 

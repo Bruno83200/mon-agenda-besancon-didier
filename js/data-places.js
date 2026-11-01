@@ -291,7 +291,7 @@ window.EVENTS = [
 /* ---------- BONS PLANS / LIENS ---------- */
 window.LINKS = {
   ginko: 'https://www.ginko.voyage/',
-  ginkoPlan: 'https://www.ginko.voyage/plan',
+  ginkoPlan: 'https://www.ginko.voyage/plan',                       // plan interactif : nom exact des arrêts
   ginkoItin: 'https://www.ginko.voyage/se-deplacer/itineraires/calcul-ditineraires/',
   velocite: 'https://www.grandbesancon.fr/infos-pratiques/transports/se-deplacer-plus-simplement/',
   ville: 'https://www.besancon.fr/',
