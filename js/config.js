@@ -15,7 +15,7 @@ window.APP_CONFIG = {
 
   /* ---------- 1. GINKO ---------- */
   ginko: {
-    apiKey: 'c81c7738e3f6b7395afcf5ebf24281fd',   // ← clé temporaire de test
+    apiKey: '8f9e73ba875a13a92424c3c2a9dfba3d',   // ← clé permanente Ginko (ne change plus)
     base: 'https://api.ginko.voyage',
     refetchSec: 30,          // rafraîchissement des temps d'attente
     nbParLigne: 3,           // nombre de passages demandés par ligne/sens

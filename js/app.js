@@ -334,6 +334,27 @@ function renderPerso() {
 }
 
 /* ============================ 5. GINKO — TEMPS RÉEL ============================ */
+/* Durée d'attente en minutes, robuste aux réponses de l'API :
+   - tempsEnMinute = -1 (valeur sentinelle) alors que la vraie durée est en secondes
+   - « temps » texte du type « 9 min », « 1 h 05 » */
+function dureeMin(t) {
+  const m = t.tempsEnMinute;
+  if (m != null && m >= 0) return Math.round(m);
+  const sec = t.tempsEnSeconde;
+  if (sec != null && sec >= 0) return Math.round(sec / 60);
+  const txt = String(t.temps || '').replace(/\s+/g, ' ').trim();
+  if (!txt) return null;
+  // la valeur la plus lisible compte : on prend la plus grande, le texte étant parfois cumulatif
+  const hs = /(\d+)\s*h\s*(\d{1,2})?/i.exec(txt);
+  const ms = /(\d+)\s*min/i.exec(txt);
+  const cands = [];
+  if (hs) cands.push(+hs[1] * 60 + (hs[2] ? +hs[2] : 0));
+  if (ms) cands.push(+ms[1]);
+  if (cands.length) return Math.round(Math.min.apply(null, cands));
+  const seul = /^(\d+)$/.exec(txt);
+  return seul ? +seul[1] : null;
+}
+
 const ginko = {
   timer: null, last: {}, errors: 0,
 
@@ -350,7 +371,7 @@ const ginko = {
     const o = j.objets;
     const list = (o.listeTemps || []).map(t => ({
       ligne: t.numLignePublic, couleur: '#' + (t.couleurFond || '555555'), couleurTexte: '#' + (t.couleurTexte || 'FFFFFF'),
-      dest: t.destination || '', min: (t.tempsEnMinute != null ? t.tempsEnMinute : (t.tempsEnSeconde ? Math.round(t.tempsEnSeconde / 60) : null)),
+      dest: t.destination || '', min: dureeMin(t),
       heure: t.typeDeTemps === 1 && t.temps ? t.temps : null,
       texte: t.typeDeTemps === 2 ? (t.temps || '') : '',
       fiable: !!t.fiable, arret: t.idArret, affluence: t.affluence
@@ -396,7 +417,7 @@ const ginko = {
     else body = deps.map(d => {
       const m = d.min;
       const cls = m == null ? '' : m <= 1 ? 'now' : m <= 5 ? 'soon' : '';
-      const label = d.texte ? esc(d.texte) : (m == null ? '—' : (m <= 0 ? 'à quai' : m + '<small> min</small>'));
+      const label = d.texte ? esc(d.texte) : (m == null ? '—' : (m <= 0 ? 'à quai' : Math.round(m) + '<small> min</small>'));
       const heure = d.heure ? d.heure.replace(/\s/g, '').slice(0, 5) : (m != null ? minToHM(frHour() * 60 + m) : '');
       return '<div class="dep" title="' + esc(d.ligne + ' → ' + d.dest + (d.fiable ? ' (temps réel GPS)' : ' (horaire théorique)')) + '">' +
         '<i class="rt' + (d.fiable ? '' : ' est') + '"></i>' + pill(d.ligne) +
@@ -431,7 +452,7 @@ const ginko = {
     if ($('#ginkoUpdated')) $('#ginkoUpdated').textContent = 'Passages mis à jour à ' + nowParts().slice(0, 5) + ' · ' + okCount + '/' + results.length + ' arrêts · temps réel';
     this.last = results;
     if (okCount === 0) {
-      toast('Ginko ne répond pas : la clé API est probablement expirée (elle change chaque jour). Cliquez sur « 🔑 clé API ».', 8000);
+      toast('Ginko ne répond pas pour le moment. Les données réelles reviendront à la prochaine actualisation.', 6000);
     }
     this.traffic(okCount > 0);
   },
@@ -452,9 +473,8 @@ const ginko = {
       }).join('');
     } catch (e) {
       el.innerHTML = dataOk === false
-        ? '<span class="muted">Clé API à renouveler : <a href="#" id="keyBtn2">coller la clé du jour</a> — <a href="https://api.ginko.voyage/" target="_blank" rel="noopener">api.ginko.voyage ↗</a></span>'
+        ? '<span class="muted">Clé API à vérifier — <a href="https://api.ginko.voyage/" target="_blank" rel="noopener">api.ginko.voyage ↗</a></span>'
         : '<span class="muted">Infos trafic indisponibles.</span>';
-      $('#keyBtn2')?.addEventListener('click', ev => { ev.preventDefault(); $('#keyBtn')?.click(); });
     }
   },
 
@@ -862,11 +882,16 @@ function paintRoute(dest, r) {
       const wait = next.min != null ? next.min : 0;
       const arriveReal = nowMin + Math.max(0, wait) + (r.total - 2.2 - firstRide.t * 0); // durée hors attente moyenne
       const arriveEst = nowMin + Math.max(0, wait) + r.total - 2.2;
-      box2.innerHTML = '<b>' + esc(next.ligne) + ' → ' + esc(next.dest) + '</b> à ' + esc(net.label(firstRide.from)) +
-        ' dans <b>' + (next.min != null ? (next.min <= 0 ? 'à quai' : next.min + ' min') : (next.heure || '—')) + '</b>' +
+      const quand = next.min != null
+        ? (next.min <= 0 ? ' <b>à quai</b>' : ' dans <b>' + next.min + ' min</b>')
+        : (next.heure ? ' à <b>' + esc(String(next.heure).replace(/\s/g, '').slice(0, 5)) + '</b>' : '');
+      const suivants = use.slice(1, 4)
+        .filter(d => d.min != null && d.min >= 0)
+        .map(d => d.min + ' min (' + esc(d.dest) + ')');
+      box2.innerHTML = '<b>' + esc(next.ligne) + ' → ' + esc(next.dest) + '</b> à ' + esc(net.label(firstRide.from)) + quand +
         (next.fiable ? ' <span style="opacity:.7">(temps réel)</span>' : ' <span style="opacity:.7">(théorique)</span>') +
         ' — vous seriez à destination vers <b>' + fmtHM(arriveEst) + '</b>' +
-        (use[1] ? '<br><small>Ensuite : ' + use.slice(1, 3).map(d => d.min + ' min (' + esc(d.dest) + ')').join(' · ') + '</small>' : '');
+        (suivants.length ? '<br><small>Ensuite : ' + suivants.join(' · ') + '</small>' : '');
       document.getElementById('rtBox')?.classList.remove('warn');
     }).catch(() => {
       const t = $('#rtText'); if (t) t.innerHTML = '<b>Direct indisponible.</b> Itinéraire théorique ci-dessous.';
@@ -1403,16 +1428,6 @@ async function loadHoroscope() {
 /* ============================ 14. DÉMARRAGE ============================ */
 function bindExtras() {
   $('#ginkoRefresh')?.addEventListener('click', () => { ginko.refresh(); toast('Rafraîchissement des passages…', 1400); });
-  $('#keyBtn')?.addEventListener('click', e => {
-    e.preventDefault();
-    const actuelle = ginko.key();
-    const nouvelle = prompt('Clé API Ginko (elle change chaque jour, voir api.ginko.voyage) :\n\nCollez la nouvelle clé puis validez.', actuelle || '');
-    if (nouvelle == null) return;
-    const k = nouvelle.trim();
-    if (!k) { store.set('ginkoKey', ''); toast('Clé réinitialisée (celle de config.js).'); }
-    else { store.set('ginkoKey', k); toast('Nouvelle clé enregistrée dans ce navigateur.'); }
-    ginko.traffic(); ginko.refresh();
-  });
   $('#modalClose')?.addEventListener('click', modalClose);
   $('#placeModal')?.addEventListener('click', e => { if (e.target.id === 'placeModal') modalClose(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') modalClose(); });
