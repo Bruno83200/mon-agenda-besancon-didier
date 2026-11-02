@@ -4,7 +4,7 @@
    Les données temps réel (Ginko, météo, actus) ne sont jamais mises en
    cache : elles sont toujours demandées au serveur.
    ========================================================================= */
-const CACHE = 'agenda-besancon-v1';
+const CACHE = 'agenda-besancon-v2';   // changer cette valeur à chaque mise à jour du site
 const SHELL = [
   './',
   './index.html',
