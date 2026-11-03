@@ -358,7 +358,23 @@ function dureeMin(t) {
 const ginko = {
   timer: null, last: {}, errors: 0,
 
-  key() { return store.get('ginkoKey', '') || CFG.ginko.apiKey || ''; },
+  /* Une clé valide = 32 caractères hexadécimaux. Tout le reste (clé d'hier
+     restée en mémoire, valeur tronquée, guillemets collés) est ignoré et
+     l'agenda retombe sur la clé permanente du fichier config.js. */
+  cleValide(k) { return /^[0-9a-f]{32}$/i.test(String(k || '').trim()); },
+
+  key() {
+    const fichier = CFG.ginko.apiKey || '';
+    if (this.cleValide(fichier)) {
+      /* La clé permanente du fichier est prioritaire. Depuis la suppression du
+         bouton 🔑, plus rien n'écrit dans la mémoire du navigateur : une clé
+         oubliée là (clé temporaire d'hier, valeur tronquée) est effacée. */
+      try { if (store.get('ginkoKey', '')) store.set('ginkoKey', ''); } catch (e) {}
+      return fichier;
+    }
+    const perso = store.get('ginkoKey', '');
+    return this.cleValide(perso) ? perso : fichier;
+  },
 
   url(path, params) {
     const p = new URLSearchParams(Object.assign({ apiKey: this.key() }, params || {}));
@@ -1438,6 +1454,8 @@ function bindExtras() {
 
 function boot() {
   try {
+    // nettoyage : toute clé mémorisée par l'ancien bouton 🔑 est effacée
+    try { if (store.get('ginkoKey', '')) store.set('ginkoKey', ''); } catch (e) {}
     buildStars();
     tickClock(); setInterval(tickClock, 1000);
     pickQuote();
