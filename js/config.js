@@ -56,10 +56,10 @@ window.APP_CONFIG = {
 
   /* ---------- 5. ACTUS (flux RSS locaux) ---------- */
   actus: {
-    // flux principal (le plus fiable) — les rubriques sont accessibles via le site
+    // un flux par onglet : la « Une » = tout le site, puis les deux rubriques dédiées
     une:     'https://www.macommune.info/feed/',
-    loisirs: 'https://www.macommune.info/feed/',
-    culture: 'https://www.macommune.info/feed/'
+    loisirs: 'https://www.macommune.info/?feed=actualite-loisirs',
+    culture: 'https://www.macommune.info/?feed=actualite-culture'
   },
 
   /* ---------- 5 bis. MES SIGNES (horoscope du bas de page) ----------
